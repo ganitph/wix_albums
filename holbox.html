@@ -4,29 +4,35 @@
 <meta charset="UTF-8">
 <title>OneDrive Gallery</title>
 <style>
-body {
-  font-family: sans-serif;
+html, body {
   margin: 0;
-  padding: 20px;
+  padding: 0;
+  width: 100%;
+  height: 100%;
   background: #f5f5f5;
+  font-family: sans-serif;
+  box-sizing: border-box;
 }
 
 .gallery-strip {
   display: flex;
+  flex-direction: row; /* סטריפ אופקי */
   gap: 10px;
-  padding-bottom: 10px;
-  overflow-x: hidden; /* ברירת מחדל: ללא גלילה */
+  padding: 10px;
+  overflow-x: hidden; /* רק אם ≤5 תמונות */
+  overflow-y: hidden;
+  height: 260px;
 }
 
 .gallery-strip.scrollable {
-  overflow-x: auto; /* אם יש יותר מ-5 תמונות */
+  overflow-x: auto; /* אם >5 תמונות */
 }
 
 .gallery-strip img {
-  height: 240px; /* כפול מהנוכחי */
+  height: 240px;
   cursor: pointer;
   transition: transform 0.2s;
-  flex-shrink: 0; /* כדי לשמור את הגובה בקבוע */
+  flex-shrink: 0;
 }
 
 .gallery-strip img:hover {
@@ -69,7 +75,6 @@ body {
   cursor:pointer;
   user-select:none;
 }
-
 .lightbox-overlay .nav-btn.prev { left: 20px; }
 .lightbox-overlay .nav-btn.next { right: 20px; }
 </style>
@@ -86,63 +91,68 @@ body {
 </div>
 
 <script>
-// כאן את יכולה להכניס את כל קישורי התמונות שלך מ-OneDrive
-const imageUrls = [
+document.addEventListener("DOMContentLoaded", function() {
+
+  // כאן את יכולה להכניס את כל קישורי התמונות שלך מ-OneDrive
+  const imageUrls = [
   "https://1drv.ms/i/c/446cb445afe1c3c1/IQQytzPkld_YTq1S4l_FBQJhAYChn2y1pStYZHzkdkmg934?width=6000&height=4000",
   "https://1drv.ms/i/c/446cb445afe1c3c1/IQSnV5je-WexQL4P--JIGq5AAc8PuqoqByaivonQLXvg_5c?width=4634&height=2887",
   "https://1drv.ms/i/c/446cb445afe1c3c1/IQRgDt-OcfnRRL_Xhd6IPxhpAcqwixQXgbCLY5jviOtIBN0?width=6000&height=4000",
   "https://1drv.ms/i/c/446cb445afe1c3c1/IQSVSMdZx6q9TbUPiKGzwGqvAWTT30WAeZKB9ceOIGaFSus?width=5454&height=3665"
-];
+  ];
 
-const galleryStrip = document.getElementById("galleryStrip");
-const lightbox = document.getElementById("lightbox");
-const lightboxImg = document.getElementById("lightboxImg");
-const lbClose = document.getElementById("lbClose");
-const lbPrev = document.getElementById("lbPrev");
-const lbNext = document.getElementById("lbNext");
+  const galleryStrip = document.getElementById("galleryStrip");
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  const lbClose = document.getElementById("lbClose");
+  const lbPrev = document.getElementById("lbPrev");
+  const lbNext = document.getElementById("lbNext");
 
-let currentIndex = 0;
+  let currentIndex = 0;
 
-// פונקציות Lightbox
-function openLightbox(idx) {
-  currentIndex = idx;
-  lightboxImg.src = imageUrls[idx];
-  lightbox.style.display = "flex";
-}
+  // פונקציות Lightbox
+  function openLightbox(idx) {
+    currentIndex = idx;
+    lightboxImg.src = imageUrls[idx];
+    lightbox.style.display = "flex";
+  }
 
-function closeLightbox() { lightbox.style.display = "none"; }
+  function closeLightbox() { lightbox.style.display = "none"; }
 
-function showPrev() {
-  currentIndex = (currentIndex-1+imageUrls.length)%imageUrls.length;
-  lightboxImg.src = imageUrls[currentIndex];
-}
+  function showPrev() {
+    currentIndex = (currentIndex-1+imageUrls.length)%imageUrls.length;
+    lightboxImg.src = imageUrls[currentIndex];
+  }
 
-function showNext() {
-  currentIndex = (currentIndex+1)%imageUrls.length;
-  lightboxImg.src = imageUrls[currentIndex];
-}
+  function showNext() {
+    currentIndex = (currentIndex+1)%imageUrls.length;
+    lightboxImg.src = imageUrls[currentIndex];
+  }
 
-// הוספת התמונות ל-strip
-imageUrls.forEach((url, idx) => {
-  const imgEl = document.createElement("img");
-  imgEl.src = url;
-  imgEl.onclick = () => openLightbox(idx);
-  galleryStrip.appendChild(imgEl);
+  // הוספת התמונות ל-strip
+  imageUrls.forEach((url, idx) => {
+    const imgEl = document.createElement("img");
+    imgEl.src = url;
+    imgEl.onclick = () => openLightbox(idx);
+    galleryStrip.appendChild(imgEl);
+  });
+
+  // אם יותר מ-5 תמונות, הופכים את הסטריפ ל-scrollable
+  if(imageUrls.length > 5) {
+    galleryStrip.classList.add("scrollable");
+  }
+
+  // אירועים ל-lightbox
+  lbClose.onclick = closeLightbox;
+  lbPrev.onclick = showPrev;
+  lbNext.onclick = showNext;
+
+  // סגירה בלחיצה מחוץ לתמונה
+  lightbox.onclick = (e) => { if(e.target===lightbox) closeLightbox(); }
+
 });
-
-// אם יותר מ-5 תמונות, הופכים את הסטריפ ל-scrollable
-if(imageUrls.length > 5) {
-  galleryStrip.classList.add("scrollable");
-}
-
-// אירועים ל-lightbox
-lbClose.onclick = closeLightbox;
-lbPrev.onclick = showPrev;
-lbNext.onclick = showNext;
-
-// סגירה בלחיצה מחוץ לתמונה
-lightbox.onclick = (e) => { if(e.target===lightbox) closeLightbox(); }
 </script>
 
 </body>
 </html>
+
