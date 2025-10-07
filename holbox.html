@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OneDrive Gallery</title>
+<style>
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 20px;
+  background: #f5f5f5;
+}
+
+.gallery-strip {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 10px;
+  overflow-x: hidden; /* ברירת מחדל: ללא גלילה */
+}
+
+.gallery-strip.scrollable {
+  overflow-x: auto; /* אם יש יותר מ-5 תמונות */
+}
+
+.gallery-strip img {
+  height: 240px; /* כפול מהנוכחי */
+  cursor: pointer;
+  transition: transform 0.2s;
+  flex-shrink: 0; /* כדי לשמור את הגובה בקבוע */
+}
+
+.gallery-strip img:hover {
+  transform: scale(1.05);
+}
+
+.lightbox-overlay {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.lightbox-overlay img {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.lightbox-overlay .close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+.lightbox-overlay .nav-btn {
+  position: absolute;
+  top:50%;
+  transform: translateY(-50%);
+  color:white;
+  font-size:40px;
+  cursor:pointer;
+  user-select:none;
+}
+
+.lightbox-overlay .nav-btn.prev { left: 20px; }
+.lightbox-overlay .nav-btn.next { right: 20px; }
+</style>
+</head>
+<body>
+
+<div class="gallery-strip" id="galleryStrip"></div>
+
+<div class="lightbox-overlay" id="lightbox">
+  <span class="close-btn" id="lbClose">&times;</span>
+  <span class="nav-btn prev" id="lbPrev">&#10094;</span>
+  <img id="lightboxImg" src="">
+  <span class="nav-btn next" id="lbNext">&#10095;</span>
+</div>
+
+<script>
+// כאן את יכולה להכניס את כל קישורי התמונות שלך מ-OneDrive
+const imageUrls = [
+  "https://1drv.ms/i/c/446cb445afe1c3c1/IQQytzPkld_YTq1S4l_FBQJhAYChn2y1pStYZHzkdkmg934?width=6000&height=4000",
+  "https://1drv.ms/i/c/446cb445afe1c3c1/IQSnV5je-WexQL4P--JIGq5AAc8PuqoqByaivonQLXvg_5c?width=4634&height=2887",
+  "https://1drv.ms/i/c/446cb445afe1c3c1/IQRgDt-OcfnRRL_Xhd6IPxhpAcqwixQXgbCLY5jviOtIBN0?width=6000&height=4000",
+  "https://1drv.ms/i/c/446cb445afe1c3c1/IQSVSMdZx6q9TbUPiKGzwGqvAWTT30WAeZKB9ceOIGaFSus?width=5454&height=3665"
+];
+
+const galleryStrip = document.getElementById("galleryStrip");
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+const lbClose = document.getElementById("lbClose");
+const lbPrev = document.getElementById("lbPrev");
+const lbNext = document.getElementById("lbNext");
+
+let currentIndex = 0;
+
+// פונקציות Lightbox
+function openLightbox(idx) {
+  currentIndex = idx;
+  lightboxImg.src = imageUrls[idx];
+  lightbox.style.display = "flex";
+}
+
+function closeLightbox() { lightbox.style.display = "none"; }
+
+function showPrev() {
+  currentIndex = (currentIndex-1+imageUrls.length)%imageUrls.length;
+  lightboxImg.src = imageUrls[currentIndex];
+}
+
+function showNext() {
+  currentIndex = (currentIndex+1)%imageUrls.length;
+  lightboxImg.src = imageUrls[currentIndex];
+}
+
+// הוספת התמונות ל-strip
+imageUrls.forEach((url, idx) => {
+  const imgEl = document.createElement("img");
+  imgEl.src = url;
+  imgEl.onclick = () => openLightbox(idx);
+  galleryStrip.appendChild(imgEl);
+});
+
+// אם יותר מ-5 תמונות, הופכים את הסטריפ ל-scrollable
+if(imageUrls.length > 5) {
+  galleryStrip.classList.add("scrollable");
+}
+
+// אירועים ל-lightbox
+lbClose.onclick = closeLightbox;
+lbPrev.onclick = showPrev;
+lbNext.onclick = showNext;
+
+// סגירה בלחיצה מחוץ לתמונה
+lightbox.onclick = (e) => { if(e.target===lightbox) closeLightbox(); }
+</script>
+
+</body>
+</html>
